@@ -4,6 +4,7 @@ import { userModel } from "../database/models/user.schema";
 import { createToken } from "../services/jwt/sign.token";
 import { accessToken,refreshToken } from "../services/jwt/sign.token";
 import { sendMailReset } from "../services/mail/password.reset..mail";
+import { tokenModel } from "../database/models/token.schema";
 
 export const logIn = async (request:Request,response:Response)=>{
   
@@ -19,7 +20,7 @@ export const logIn = async (request:Request,response:Response)=>{
         if(!compare||!originalPass){
             return response.status(500).json({message:"sign up data not found"}); 
         }
-           await createToken(originalPass._id,response).finally(()=>{return response.status(200).json({status:"ok",message:{accessToken,refreshToken}});});
+           await createToken(originalPass._id,response).finally(()=>{return response.status(200).json({status:"ok",message:{accessToken}});});
                   
     } catch (error) {
         return response.status(500).json({status:"error",message:"Please check your entry"});
@@ -42,21 +43,30 @@ export const register = async (request:Request,response:Response)=>{
 };
 
 export const logOut = async (request:Request,response:Response)=>{
-    response.cookie("access","",{maxAge:0});
+    const delTokFromDb = await tokenModel.deleteOne({token:request.cookies["refresh"]}); 
     response.cookie("refresh","",{maxAge:0});
     return response.status(200).json({status:"ok",message:"user logged out"})
 };
 
 export const forgotPassword = async (request:Request,response:Response)=>{
+try {
     const {email } = await request.body;
     const token = await userModel.findOne({email});
     if(!token){
         return response.status(404).json({status:"error",message:"user not found"});
     }
+    
     sendMailReset(token._id,email);
-if(!sendMailReset){
+
+    if(!sendMailReset){
     return response.status(400).json({status:"error"});
-}   return response.send("mail sent successfully");
+} else{
+    return response.send("mail sent successfully");
+}
+ 
+} catch (error) {
+    return response.status(400).json({status:"error"});
+}
 };
 
 export const resetPassword = async (request:Request,response:Response)=>{

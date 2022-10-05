@@ -2,6 +2,7 @@ import {createTransport} from "nodemailer";
 
 
 export const sendMailReset = async (token:any,email:any)=>{
+try {
     const transporter = createTransport({
         host:"0.0.0.0",
         port:1025,
@@ -14,5 +15,8 @@ export const sendMailReset = async (token:any,email:any)=>{
         html:`Click <a href=${url}>here</a> to reset your password!`
 
     }); 
-    return true;
+} catch (error) {
+    return error;
+}
+    
 }
