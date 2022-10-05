@@ -28,7 +28,7 @@ export default function ButtonAppBar() {
        <Link to={"/"}>     Let's CheckOut our New Auth Api </Link>
           </Typography>
 
-          { data.logInput.status?<Button color="inherit" onClick={()=>{data.setLogInput({email:"fsd",password:"fdsf",status:true})}}><Link to={"/"}>Logout</Link></Button>:<Button color="inherit"><Link to={`/login`}>Login</Link></Button>}
+          { data.logInput.status?<Button color="inherit" onClick={()=>{data.setLogInput({status:false})}}><Link to={"/"}>Logout</Link></Button>:<Button color="inherit"><Link to={`/login`}>Login</Link></Button>}
           
           { data.logInput.status?"":<Button color="inherit"><Link to={`/register`}>register</Link></Button>}
           
