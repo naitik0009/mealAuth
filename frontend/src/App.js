@@ -1,24 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
 
+import { Navigate, Route, Routes } from 'react-router';
+import React, { useContext } from 'react';
+import './App.css';
+import ButtonAppBar from './components/appbar.component';
+import { HomeScreen } from './screens/home.screen';
+import SignIn from './screens/login.screen';
+import SignUp from './screens/register.screen';
+import { UserContext } from './context/user.login.state';
 function App() {
+  const data = useContext(UserContext);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <ButtonAppBar />
+      <Routes>
+
+        {data.logInput.status ? <Route path='/' element={<HomeScreen />} /> : <Route path='login' element={<SignIn />} />}
+
+        {data.logInput.status ? <Route path='/' element={<Navigate to={"/"} />} /> : <Route path='/login' element={<Navigate to={"/login"} />} />}
+
+        {data.logInput.status ? <Route path='/' element={<HomeScreen />} /> : <Route path='register' element={<SignUp />} />}
+
+      </Routes>
+    </>
   );
 }
 
