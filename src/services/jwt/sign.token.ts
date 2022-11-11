@@ -8,6 +8,7 @@ export const createToken = async (id:any,response:Response)=>{
     const token = sign({
         id:id,
     },process.env.access||"",{expiresIn:"60s"});
+    
     const refresh = sign({id:id},process.env.refresh||"",{expiresIn:"1w"});
     accessToken.push(token);
     refreshToken.push(refresh)

@@ -15,6 +15,13 @@ const userSchema = new mongoose.Schema({
         type:String,
         require:true,
     },
+    //while using local storage for avatar use BUffer
+    // avatar:{
+    //     type:Buffer,
+    // }
+    avatar:{
+        type:String,
+    }
 });
 
 

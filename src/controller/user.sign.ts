@@ -1,27 +1,29 @@
 import { Request,Response } from "express";
 import bcryptjs from "bcryptjs";
 import { userModel } from "../database/models/user.schema";
-import { createToken } from "../services/jwt/sign.token";
-import { accessToken,refreshToken } from "../services/jwt/sign.token";
 import { sendMailReset } from "../services/mail/password.reset..mail";
 import { tokenModel } from "../database/models/token.schema";
-
+import {sign} from "jsonwebtoken";
 export const logIn = async (request:Request,response:Response)=>{
-  
-        
+
     try {
         const {email,password} = await  request.body;
         const originalPass = await userModel.findOne({email:email}); 
         const compare = await bcryptjs.compare(password,originalPass?.password!);
+
         if(!email || !password){
-            return response.status(400).json({message:"sign up data not found"});  
+            return response.status(400).json({status:"error",message:"sign up data not found"});  
         } 
-        
-        if(!compare||!originalPass){
-            return response.status(500).json({message:"sign up data not found"}); 
+        if(!compare || !originalPass){
+            return response.status(400).json({status:"error",message:"sign up data not matched"}); 
+        }else{
+            //let's create jwt!!!
+            const token =  sign({
+                id:originalPass.id,
+            },process.env.access||"",{expiresIn:"3000s"});
+            return response.status(200).json({status:"ok",message:{token}});
         }
-           await createToken(originalPass._id,response).finally(()=>{return response.status(200).json({status:"ok",message:{accessToken}});});
-                  
+                   
     } catch (error) {
         return response.status(500).json({status:"error",message:"Please check your entry"});
     }
@@ -29,9 +31,11 @@ export const logIn = async (request:Request,response:Response)=>{
 
 
 export const register = async (request:Request,response:Response)=>{
+  try {
     const {name,email,password} = await request.body;
+    
     if(!name||!email||!password){
-        return response.status(400).json({message:"sign up data not found"});
+        return response.status(400).json({status:"error",message:"sign up data not found"});
     } 
     const hash = await bcryptjs.hash(password,12);
     const reg = await userModel.create({name,email,password:hash});
@@ -39,6 +43,9 @@ export const register = async (request:Request,response:Response)=>{
     else{
         return response.status(400).json({status:"error",message:"cannot register"});
     }
+  } catch (error) {
+    return response.status(500).json({status:"error",message:"cannot register"});
+  }
     
 };
 
@@ -55,9 +62,7 @@ try {
     if(!token){
         return response.status(404).json({status:"error",message:"user not found"});
     }
-    
     sendMailReset(token._id,email);
-
     if(!sendMailReset){
     return response.status(400).json({status:"error"});
 } else{
