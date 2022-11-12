@@ -1,6 +1,5 @@
 import {createTransport} from "nodemailer";
 
-
 export const sendMailReset = async (token:any,email:any)=>{
 try {
     const transporter = createTransport({
@@ -8,6 +7,7 @@ try {
         port:1025,
     },);
     const url = `http://localhost:5500/api/v1/user/reset/${token}`;
+    
     await transporter.sendMail({
         from:"@naitikMailApi",
         to:email,

@@ -21,8 +21,16 @@ const userSchema = new mongoose.Schema({
     // }
     avatar:{
         type:String,
-    }
+    },
+    admin:{
+        type:Boolean,
+        default:false,
+    },
+    verified:{
+        type:Boolean,
+        default:false,
+    },
 });
 
 
-export const userModel = mongoose.model("Users",userSchema); 
+export const userModel = mongoose.model("User",userSchema); 
