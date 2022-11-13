@@ -1,22 +1,21 @@
-import {createTransport} from "nodemailer";
-
+import { mailConfig } from "./config";
 export const sendMailReset = async (token:any,email:any)=>{
-try {
-    const transporter = createTransport({
-        host:"0.0.0.0",
-        port:1025,
-    },);
-    const url = `http://localhost:5500/api/v1/user/reset/${token}`;
     
-    await transporter.sendMail({
-        from:"@naitikMailApi",
+try {
+
+    const url = `http://localhost:3000/reset-password/token=${token}&email=${email}`;
+    
+ const mail = await mailConfig().sendMail({
+        from:"talkingNinjs@gmail.com",
         to:email,
         subject:"Reset Your Password",
-        html:`Click <a href=${url}>here</a> to reset your password!`
+        html:`Click here to reset your password! <br> <a href=${url}><button>Reset Password</button></a>`
 
     }); 
-} catch (error) {
-    return error;
+    return mail;
+} catch (error:any) {
+   return new Error(error);
+    
 }
     
 }

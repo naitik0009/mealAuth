@@ -9,6 +9,7 @@ import {userProfile} from "../controller/user.profile";
 import { authenticatedUser } from "../middlewares/auth.user.middleware";
 import { avatarUpload } from "../controller/user.avatar";
 import { verifyUser } from "../controller/user.verify";
+import { verifyPasswordResetToken } from "../middlewares/validResetPasswordToken";
 export const route:Router = express.Router();
 
 
@@ -20,6 +21,6 @@ route.post("/user/verify-email",verifyUser);
 route.get("/user",authenticatedUser);
 route.post("/user/refresh",refreshToken);
 route.post("/user/logout",logOut);
-route.post("/user/forgot",forgotPassword);
-route.get("/user/reset/:id",resetPassword)
-route.get("/user/reset",resetPassword);
+route.post("/user/forgot-password",forgotPassword);
+// route.get("/user/reset/:id",resetPassword)
+route.get("/user/reset-password",verifyPasswordResetToken,resetPassword);

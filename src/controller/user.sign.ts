@@ -5,8 +5,9 @@ import { sendMailReset } from "../services/mail/password.reset..mail";
 import { tokenModel } from "../database/models/token.schema";
 import { sign } from "jsonwebtoken";
 import { generateOtp } from "../services/mail/otp";
-import { hashToken } from "../services/encode/token.hash";
+import { randomToken } from "../services/encode/token.hash";
 import { sendOtp } from "../services/mail/otp.verification";
+import { resetPasswordTokenModel } from "../database/models/reset.pasword.token";
 
 
 //let's login the user
@@ -75,40 +76,64 @@ export const register = async (request: Request, response: Response) => {
 
 };
 
+//let's sent the forgot password email to the client
 
+export const forgotPassword = async (request: Request, response: Response) => {
+    try {
+        const { email } = await request.body;
+        const user = await userModel.findOne({emial:email});
+        const token = await resetPasswordTokenModel.findOne({user:user?._id});
+        if (token) {
+            return response.status(400).json({ status: "error", message: "token already exist wait for 1 hours to generate a new token" });
+        }
+        const createRandomToken = await randomToken();
+        const sendMail = await sendMailReset(createRandomToken, email);
+
+        if (!sendMail) {
+            return response.status(400).json({ status: "error",message:"cannot create token please try again" });
+        } else {
+            return response.status(200).json({status:"ok",message:"mail sent successfully check your email"});
+        }
+
+    } catch (error) {
+        return response.status(500).json({ status: "error",message:error });
+    }
+};
+
+//let's reset the password
+export const resetPassword = async (request: Request, response: Response) => {
+    try {
+        const { password } = await request.body;
+        
+        if(!password){
+            return response.status(400).json({status:"error",message:"please provide a new password !"});
+        }
+        if(password.length <8 || password.length>20){
+            return response.status(400).json({status:"error",message:"please provide a password greater than 8 and less than 20 character!"});
+        }
+    const userId:any = await request.user._id;
+    const user:any = await userModel.findById(userId);
+    const comparePassword = await bcryptjs.compare(password,user?.password);
+    if(comparePassword){
+        return response.status(400).json({status:"error",message:"please use a password diffrent from the previous one !"});
+    }else{
+        const hashPassword = await bcryptjs.hash(password,8);
+        const updatePasword = await userModel.findByIdAndUpdate(userId,{password:hashPassword});
+        if(updatePasword){
+            return response.status(200).json({status:"ok",message:"congratulation your password has been reset!!"});
+        }else{
+            return response.status(400).json({status:"error",message:"sorry unable to reset your password please try again !"});
+        }
+    }
+    } catch (error) {
+        return response.status(500).json({status:"error",message:error});   
+    }
+
+};
 
 export const logOut = async (request: Request, response: Response) => {
     const delTokFromDb = await tokenModel.deleteOne({ token: request.cookies["refresh"] });
     response.cookie("refresh", "", { maxAge: 0 });
     return response.status(200).json({ status: "ok", message: "user logged out" })
 };
-
-
-export const forgotPassword = async (request: Request, response: Response) => {
-    try {
-        const { email } = await request.body;
-        const token = await userModel.findOne({ email });
-        if (!token) {
-            return response.status(404).json({ status: "error", message: "user not found" });
-        }
-        sendMailReset(token._id, email);
-        if (!sendMailReset) {
-            return response.status(400).json({ status: "error" });
-        } else {
-            return response.send("mail sent successfully");
-        }
-
-    } catch (error) {
-        return response.status(400).json({ status: "error" });
-    }
-};
-
-
-
-export const resetPassword = async (request: Request, response: Response) => {
-    const { id } = request.params;
-    return response.send(id);
-
-};
-
 // export const changePassword =s

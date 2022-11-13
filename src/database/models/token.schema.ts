@@ -1,7 +1,4 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
-import { isModifier } from "typescript";
-import { NextFunction } from "express";
 
 const Token = new mongoose.Schema({
     user: {

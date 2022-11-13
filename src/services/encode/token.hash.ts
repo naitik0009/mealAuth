@@ -1,7 +1,14 @@
-import bcrypt from "bcryptjs";
-export const hashToken = async(token:any)=>{
-    const hash =  bcrypt.hashSync(token,8);
-    console.log(hash);
-    return hash;
-    
+import crypto from "crypto";
+
+export const randomToken = ()=>{
+    return new Promise((resolve,reject)=>{
+        crypto.randomBytes(30,(error,buffer)=>{
+            if(error){
+                reject(error);
+            }else{
+                const token = buffer.toString("hex");
+                resolve(token);
+            }
+        })
+    });
 }
