@@ -23,4 +23,4 @@ route.post("/user/refresh",refreshToken);
 route.post("/user/logout",logOut);
 route.post("/user/forgot-password",forgotPassword);
 // route.get("/user/reset/:id",resetPassword)
-route.get("/user/reset-password",verifyPasswordResetToken,resetPassword);
+route.post("/user/reset-password/",verifyPasswordResetToken,resetPassword);

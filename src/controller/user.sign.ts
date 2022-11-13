@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcryptjs from "bcryptjs";
 import { userModel } from "../database/models/user.schema";
-import { sendMailReset } from "../services/mail/password.reset..mail";
+import { sendMailReset, sendMailResetConfirm } from "../services/mail/password.reset..mail";
 import { tokenModel } from "../database/models/token.schema";
 import { sign } from "jsonwebtoken";
 import { generateOtp } from "../services/mail/otp";
@@ -87,12 +87,16 @@ export const forgotPassword = async (request: Request, response: Response) => {
             return response.status(400).json({ status: "error", message: "token already exist wait for 1 hours to generate a new token" });
         }
         const createRandomToken = await randomToken();
+        console.log(createRandomToken);
+        const createToken = await resetPasswordTokenModel.create({token:createRandomToken,user:user?._id});
         const sendMail = await sendMailReset(createRandomToken, email);
-
         if (!sendMail) {
             return response.status(400).json({ status: "error",message:"cannot create token please try again" });
-        } else {
-            return response.status(200).json({status:"ok",message:"mail sent successfully check your email"});
+        } 
+            if(createToken){
+                return response.status(200).json({status:"ok",message:"mail sent successfully check your email"});
+            }else{
+                return response.status(400).json({ status: "error",message:"cannot send mail & can't create token please try again" });
         }
 
     } catch (error) {
@@ -104,7 +108,7 @@ export const forgotPassword = async (request: Request, response: Response) => {
 export const resetPassword = async (request: Request, response: Response) => {
     try {
         const { password } = await request.body;
-        
+
         if(!password){
             return response.status(400).json({status:"error",message:"please provide a new password !"});
         }
@@ -117,16 +121,26 @@ export const resetPassword = async (request: Request, response: Response) => {
     if(comparePassword){
         return response.status(400).json({status:"error",message:"please use a password diffrent from the previous one !"});
     }else{
+        
         const hashPassword = await bcryptjs.hash(password,8);
         const updatePasword = await userModel.findByIdAndUpdate(userId,{password:hashPassword});
         if(updatePasword){
-            return response.status(200).json({status:"ok",message:"congratulation your password has been reset!!"});
+          const deleteToken = await resetPasswordTokenModel.findOneAndDelete({user:userId});
+         
+          if(deleteToken){
+            const sendMail= await sendMailResetConfirm(user.email);
+            if(sendMail){
+                return response.status(200).json({status:"ok",message:"congratulation your password has been reset!!"});
+            }else{
+                return response.status(400).json({status:"error",message:"sorry unable to reset your password token deletion error please try again !"});
+            }
+          }
         }else{
             return response.status(400).json({status:"error",message:"sorry unable to reset your password please try again !"});
         }
     }
     } catch (error) {
-        return response.status(500).json({status:"error",message:error});   
+        return response.status(500).json({status:"error",message:"randi ko baan"});   
     }
 
 };
