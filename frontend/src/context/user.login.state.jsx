@@ -4,7 +4,7 @@ export const UserContext = createContext();
 
 export const UserProvider = ({children})=>{
     const [regInput,setRegInput] = useState({name:"",email:"",password:""});
-    const [logInput,setLogInput] = useState({email:"",password:"",status:true}); 
+    const [logInput,setLogInput] = useState({email:"",password:"",status:false}); 
 
     useEffect(()=>{
         console.log("triggering logInput",logInput.email);
