@@ -13,24 +13,16 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { UserContext } from '../context/user.login.state';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
+import  axios from "axios";
 const theme = createTheme();
 
-export default function SignIn() {
-    const data = React.useContext(UserContext);
+export default function SignIn(email,password) {
+    const context = React.useContext(UserContext);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    data.setInput({
-        email: data.get('email'),
-        password: data.get('password'),
-        status:true,   
-    });
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    const handleSubmit = (event) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      
   };
 
   return (
@@ -86,7 +78,7 @@ export default function SignIn() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
+                <Link href="/forgot-password" variant="body2">
                   Forgot password?
                 </Link>
               </Grid>
